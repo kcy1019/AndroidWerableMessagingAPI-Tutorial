@@ -1,8 +1,8 @@
 package watch2.lucent.watch2;
 
-import android.net.Uri;
 
-import com.google.android.gms.wearable.DataEvent;
+import android.net.Uri;
+import com.google.android.gms.wearable.DataEvent    ;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.MessageEvent;
@@ -10,16 +10,19 @@ import com.google.android.gms.wearable.WearableListenerService;
 
 import android.util.Log;
 
+import java.util.List;
+
 public class MessageReceiver extends WearableListenerService {
     private static final String TAG = "watch/MessageReceiver";
+    private ListController listController;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        Log.d(TAG, "Created!");
+        listController = ListController.getInstance(null);
     }
 
+    /*
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         super.onDataChanged(dataEvents);
@@ -33,9 +36,12 @@ public class MessageReceiver extends WearableListenerService {
             }
         }
     }
+    */
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        Log.d(TAG, "onMessageReceived: " + messageEvent.getPath());
+        String item = messageEvent.getPath() + ": " + new String(messageEvent.getData());
+        Log.d(TAG, "onMessageReceived: " + item);
+        listController.add(item);
     }
 }

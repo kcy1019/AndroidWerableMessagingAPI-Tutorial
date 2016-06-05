@@ -1,64 +1,51 @@
 package watch2.lucent.watch2;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.wearable.activity.WearableActivity;
-import android.support.wearable.view.BoxInsetLayout;
-import android.view.View;
-import android.widget.TextView;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import java.util.ArrayList;
 
 public class MainActivity extends WearableActivity {
-
-    private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
-            new SimpleDateFormat("HH:mm", Locale.US);
-
-    private BoxInsetLayout mContainerView;
-    private TextView mTextView;
-    private TextView mClockView;
+    private static final String TAG = "watch/MainActivity";
+    private ListView listMessage;
+    private ListController listController;
+    private ArrayList<String> listItems;
+    private ArrayAdapter<String> adapter;
+    public Handler invalidateHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setAmbientEnabled();
 
-        mContainerView = (BoxInsetLayout) findViewById(R.id.container);
-        mTextView = (TextView) findViewById(R.id.text);
-        mClockView = (TextView) findViewById(R.id.clock);
+        initUI();
     }
 
-    @Override
-    public void onEnterAmbient(Bundle ambientDetails) {
-        super.onEnterAmbient(ambientDetails);
-        updateDisplay();
+    private void initUI() {
+        listMessage = (ListView) findViewById(R.id.listMessage);
+        listItems = new ArrayList<>();
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listItems);
+        listMessage.setAdapter(adapter);
+
+         invalidateHandler = new Handler() {
+             public void handleMessage(final Message msg) {
+                 Log.d(TAG, "handler is working");
+                 runOnUiThread(new Runnable () {
+                     @Override
+                     public void run() {
+                         Bundle bundle = msg.getData();
+                         listItems.add(bundle.getString("msg"));
+                         adapter.notifyDataSetChanged();
+                     }
+                 });
+             }
+         };
+
+        listController = ListController.getInstance(invalidateHandler);
     }
 
-    @Override
-    public void onUpdateAmbient() {
-        super.onUpdateAmbient();
-        updateDisplay();
-    }
-
-    @Override
-    public void onExitAmbient() {
-        updateDisplay();
-        super.onExitAmbient();
-    }
-
-    private void updateDisplay() {
-        if (isAmbient()) {
-            mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
-            mTextView.setTextColor(getResources().getColor(android.R.color.white));
-            mClockView.setVisibility(View.VISIBLE);
-
-            mClockView.setText(AMBIENT_DATE_FORMAT.format(new Date()));
-        } else {
-            mContainerView.setBackground(null);
-            mTextView.setTextColor(getResources().getColor(android.R.color.black));
-            mClockView.setVisibility(View.GONE);
-        }
-    }
 }

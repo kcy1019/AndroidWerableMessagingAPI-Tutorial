@@ -2,81 +2,60 @@ package watch2.lucent.watch2;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.MessageApi;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.Wearable;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-
-
-import java.util.List;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.TimeUnit;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
-    private final String TAG = "mobile/MainActivity";
-    private GoogleApiClient googleApiClient;
+    private static final String TAG = "mobile/MainActivity";
+    private MessageSender messageSender;
+    private EditText editSend;
+    private Button btnSend;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(new ConnectionCallbacks() {
-                    @Override
-                    public void onConnected(Bundle connectionHint) {
-                        Log.d(TAG, "onConnected: " + connectionHint);
-                        sendMessage("ASDF/QWER", "");
-                    }
-                    @Override
-                    public void onConnectionSuspended(int cause) {
-                        Log.d(TAG, "onConnectionSuspended: " + cause);
-                    }
-                })
-                .addOnConnectionFailedListener(new OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult result) {
-                        Log.d(TAG, "onConnectionFailed: " + result);
-                    }
-                }).build();
-
-        new Thread()
-        {
-            public void run() {
-                googleApiClient.connect();
-            }
-        }.start();
+        messageSender = MessageSender.getInstance(this);
+        initUI();
     }
 
-    private void sendMessage(final String path, final String message) {
+    private void initUI() {
+        editSend = (EditText) findViewById(R.id.editSend);
+        btnSend = (Button) findViewById(R.id.btnSend);
 
-        new Thread() {
-            public void run() {
-
-                List<Node> nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await().getNodes();
-
-                Log.d(TAG, "Sending to nodes:" + nodes.size());
-
-                for (Node node : nodes) {
-                    Log.i(TAG, "add node " + node.getDisplayName());
-                    Wearable.MessageApi.sendMessage(
-                            googleApiClient, node.getId(), path, null
-                    ).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
-                        @Override
-                        public void onResult(MessageApi.SendMessageResult sendMessageResult) {
-                            Log.d(TAG, "controlMeasurementInBackground(" + path + "): " + sendMessageResult.getStatus().isSuccess());
-                        }
-                    });
+        editSend.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void afterTextChanged(Editable s) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    btnSend.setEnabled(true);
+                } else {
+                    btnSend.setEnabled(false);
                 }
             }
-        }.start();
+        });
+
+        btnSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnSend.setEnabled(false);
+
+                String message = editSend.getText().toString();
+                editSend.setText("");
+
+                messageSender.sendMessage(TAG, message);
+            }
+        });
     }
+
+
 }
