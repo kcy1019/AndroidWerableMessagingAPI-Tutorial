@@ -1,5 +1,6 @@
 package watch2.lucent.watch2;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -27,6 +28,9 @@ public class MainActivity extends WearableActivity {
 
         messageSender = MessageSender.getInstance(this);
         initUI();
+        messageSender.sendMessage(TAG, "Initialized!");
+        Intent startSensing = new Intent(this, ContinuousSensor.class);
+        startService(startSensing);
     }
 
     private void initUI() {
