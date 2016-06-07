@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ public class MainActivity extends WearableActivity {
     private ListController listController;
     private ArrayList<String> listItems;
     private ArrayAdapter<String> adapter;
+    private MessageSender messageSender;
     public Handler invalidateHandler;
 
     @Override
@@ -22,6 +25,7 @@ public class MainActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        messageSender = MessageSender.getInstance(this);
         initUI();
     }
 
@@ -46,6 +50,14 @@ public class MainActivity extends WearableActivity {
          };
 
         listController = ListController.getInstance(invalidateHandler);
+
+        listMessage.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String item = (String) parent.getItemAtPosition(position);
+                messageSender.sendMessage(TAG, item);
+            }
+        });
     }
 
 }
