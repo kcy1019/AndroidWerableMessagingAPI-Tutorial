@@ -39,7 +39,7 @@ public class ContinuousSensor
             wakeLock.acquire();
             wakeLock.release();
         } else {
-            lastMeasured = -153523809;
+            lastMeasured = -17171771;
             messageSender = MessageSender.getInstance(this);
 
             sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
